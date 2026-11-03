@@ -2,26 +2,32 @@
 
 ## Description
 
-Checks a configured job page, filters relevant links, avoids repeat alerts, and emails new matches. Configure source URL/keywords and repository secrets; never commit credentials.
+Checks a configured PPSC/job page, filters relevant links using keywords, avoids repeat alerts by tracking previously seen results, and emails newly detected matches.
 
 ## Workflow
 
-`Scheduled GitHub Actions → Python scraper → Keyword filter → seen.json → Email alert`
+`Scheduled GitHub Actions → Python monitor → Keyword filter → seen.json → Email alert`
+
+## Technology
+
+Python, requests, BeautifulSoup, GitHub Actions, and email/SMTP.
 
 ## How to run
 
-1. Open the original project and make a safe copy for testing.
-2. Configure the required credentials and permissions. Store secrets in environment variables, Apps Script properties, or GitHub Actions secrets—not in this repository.
-3. Import or copy the original workflow/source files into this folder.
-4. Follow the setup notes in the project and run a test with sample data.
-5. Confirm the output and review logs for errors.
+1. Install dependencies from `requirements.txt`.
+2. Configure the source URL and relevant keywords.
+3. Add `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_TO`, `PPSC_URL`, and `KEYWORDS` as repository Actions secrets.
+4. Check that the workflow file is located in the repository-root `.github/workflows/` directory. The copy in this project folder is retained as project documentation; GitHub Actions does not discover workflows from this nested location.
+5. Run the workflow manually to test, then review its logs.
 
-## Files to add
+## Repository contents
 
-- [ ] **Original export:** Python source + GitHub Actions workflow YAML. Save it here using the appropriate filename. It has not been attached yet.
-- [ ] **Screenshots:** Add genuine screenshots to the `screenshots/` folder (workflow overview, successful test, and output).
-- [ ] **Sensitive-data check:** Remove API keys, passwords, tokens, personal email content, and identifiable student data before committing.
+- `monitor.py` — Python monitoring script.
+- `requirements.txt` — Python dependencies.
+- `seen.json` — state file used to avoid duplicate alerts.
+- `github/workflows/monitor.yml` — workflow copy for project reference; move/copy it to the repository-root `.github/workflows/` to enable GitHub Actions.
+- `screenshots/` — project evidence.
 
-## Evidence status
+## Security
 
-Documentation is prepared. Original exports and screenshots are pending upload from the working project.
+Never commit email passwords, API keys, tokens, or private account data. Store credentials in GitHub Actions secrets.
