@@ -1,8 +1,6 @@
 # AI Automation Portfolio
 
-A collection of five practical AI and workflow-automation projects built with **n8n, Google Apps Script, Google Sheets, Gemini, Google Docs, Gmail, and GitHub Actions**.
-
-> **Portfolio status:** Project documentation and folder structure are being prepared. Original workflow exports, screenshots, and the demo video must be added from the working projects before this portfolio is considered complete.
+A collection of five practical AI and workflow-automation projects built with **n8n, Google Apps Script, Google Sheets, Gemini, Google Docs, Gmail, Python, and GitHub Actions**.
 
 ## Table of contents
 
@@ -19,11 +17,11 @@ A collection of five practical AI and workflow-automation projects built with **
 
 **Folder:** [01-AI-Class-Feedback-Analyzer](./01-AI-Class-Feedback-Analyzer/)
 
-Collects student feedback through a form, stores responses in Google Sheets, visualizes ratings, and generates an AI-written report with Gemini. The implementation keeps student names and timestamps out of the Gemini prompt.
+Collects student feedback through a form, stores responses in Google Sheets, visualizes ratings, and generates an AI-written report with Gemini. Student names and timestamps are excluded from the Gemini prompt.
 
 **Technology:** Google Forms, Google Sheets, Google Apps Script, Gemini.
 
-**Run it:** Make a copy of the feedback form and spreadsheet, configure the `GEMINI_API_KEY` script property, verify the response tab and question columns, then run `generateClassFeedbackAIReport`.
+**How to run:** Make a copy of the form and spreadsheet, configure the `GEMINI_API_KEY` script property, verify the response tab and question columns, then run `generateClassFeedbackAIReport`.
 
 ## 2. AI Email Summarizer
 
@@ -33,7 +31,7 @@ Reads the latest five Gmail messages when manually run and creates a concise sum
 
 **Technology:** Google Apps Script, Gmail, Google Sheets, Gemini.
 
-**Run it:** Configure the `GEMINI_API_KEY` script property, authorize Gmail and Sheets access, confirm the `Emails` sheet headers, and run the summarizer function. Review the generated summaries and suggested actions.
+**How to run:** Configure `GEMINI_API_KEY`, authorize Gmail and Sheets access, confirm the `Emails` sheet headers, and run the summarizer function. Review the generated summaries and suggested actions.
 
 ## 3. AI Resume Automation
 
@@ -43,31 +41,31 @@ Uses profile and job information from Google Sheets to prepare a tailored resume
 
 **Technology:** Google Sheets, Google Docs, Google Drive, Apps Script, AI-assisted content generation.
 
-**Run it:** Make copies of the Profile and Job sheets and the Docs template, update template/document IDs and permissions in the script, authorize Google services, then use the Resume Automation menu.
+**How to run:** Make copies of the Profile and Job sheets and the Docs template, update template/document IDs and permissions in the script, authorize Google services, then use the Resume Automation menu.
 
 ## 4. CS Department FAQ AI Assistant
 
 **Folder:** [04-CS-Department-FAQ-Agent](./04-CS-Department-FAQ-Agent/)
 
-An n8n FAQ assistant that answers common Computer Science department questions, such as office hours, using an AI model. An unanswered-query log can be added to help maintain the FAQ knowledge base.
+An n8n FAQ assistant designed to answer common Computer Science department questions, such as office hours, using a configured AI model.
 
-**Technology:** n8n, webhook/chat input, Gemini (or another configured LLM), optional Google Sheets logging.
+**Technology:** n8n, chat/webhook trigger, Gemini (or another configured LLM), optional Google Sheets logging.
 
-**Run it:** Import the exported n8n workflow, configure the required model credentials and trigger, activate or test the workflow, then send a sample question. Expected office-hours test: Monday–Friday, 9 AM–4 PM (replace with the department's verified hours before real use).
+**How to run:** Import the exported n8n workflow, configure model credentials and the trigger, then test with a sample question. Verify department information (including office hours) before real-world use.
 
 ## 5. Automated Job Alert Monitor
 
 **Folder:** [05-Automated-Job-Alert-Monitor](./05-Automated-Job-Alert-Monitor/)
 
-Checks configured PPSC/job-page sources for relevant links, filters them using keywords, tracks previously seen results, and emails newly detected matches.
+Checks a configured PPSC/job page for relevant links, filters them using keywords, tracks previously seen results, and emails newly detected matches.
 
 **Technology:** Python, requests, BeautifulSoup, GitHub Actions, email/SMTP.
 
-**Run it:** Configure the source URL and keywords, add the required email credentials as repository secrets, review the workflow schedule, and run the GitHub Actions workflow. Never commit email passwords or other secrets.
+**How to run:** Configure the source URL and keywords, add email credentials as repository secrets, verify the GitHub Actions workflow location and schedule, then run the workflow. Never commit email passwords or other secrets.
 
 ## Two-minute demo video
 
-**Status:** Not uploaded yet. Add a publicly viewable video URL here after recording a two-minute walkthrough of the five automations.
+**Status:** Not uploaded yet. Add a publicly viewable video URL after recording a two-minute walkthrough of the projects.
 
 ## University project extension
 
@@ -75,7 +73,7 @@ Checks configured PPSC/job-page sources for relevant links, filters them using k
 
 Extend the CS Department FAQ Assistant into a university-wide helpdesk. Students could ask about admissions, registration, fee deadlines, department office hours, exam schedules, and campus services. The system would answer from an approved university knowledge base, log questions it cannot answer, and route unresolved requests to the relevant office. An admin dashboard could show common questions, unanswered queries, and response trends.
 
-**Why this extends the portfolio:** It builds directly on the FAQ assistant while adding knowledge-base management, escalation, analytics, and multi-department support.
+**Extension value:** This builds on the FAQ assistant while adding knowledge-base management, escalation, analytics, and multi-department support.
 
 ## Repository structure
 
@@ -90,4 +88,4 @@ AI-Automation-Portfolio/
 └── university-project/
 ```
 
-Each automation folder contains its own project guide and a screenshots directory. Add the original exported workflow file (for example, `workflow.json` for n8n exports or the relevant Apps Script source files) and genuine screenshots from the completed project. Do not include API keys, passwords, personal student data, or private email content.
+Each project folder contains a project guide and a screenshots directory. Keep credentials, API keys, passwords, tokens, private email content, and identifiable student data out of this repository.
