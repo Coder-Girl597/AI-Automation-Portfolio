@@ -1,0 +1,136 @@
+{
+  "name": "CS Department FAQ AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -400,
+        -96
+      ],
+      "id": "6f54ae03-7a9b-4833-a1a9-28b11142e344",
+      "name": "When chat message received",
+      "webhookId": "f3828c3c-b71f-416d-a549-e152cba63937"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the CS Department HelpDesk Assistant.\n\nROLE:\nYou are a friendly, professional and helpful AI assistant for the Computer Science Department.\n\nYOUR RESPONSIBILITIES:\n1. Answer students' questions about the Computer Science Department.\n2. Provide short, clear and accurate information.\n3. Help students understand department policies and procedures.\n4. Be polite and professional.\n\nFREQUENTLY ASKED QUESTIONS:\n\n1. Office Hours:\nThe department office is open Monday to Friday, 9:00 AM to 4:00 PM.\n\n2. Head of Department:\nPlease contact the department office for the current Head of Department's details.\n\n3. Admission Requirements:\nStudents should check the university's official admission portal for eligibility and admission requirements.\n\n4. Department Contact:\nStudents can visit the Computer Science Department office for assistance.\n\n5. Attendance Requirement:\nStudents should maintain at least 75% attendance, subject to university policy.\n\n6. Class Timetable:\nStudents can obtain their latest timetable from the department office or official student portal.\n\n7. Examination Dates:\nExamination schedules are announced through official university notices.\n\n8. Leave Application:\nStudents should submit a leave application to the department office according to university rules.\n\n9. Course Materials:\nStudents should contact their course instructors or check the official learning portal.\n\n10. Teacher Contact:\nStudents can contact their teachers during office hours or through official university communication channels.\n\nIMPORTANT RULES:\n- Only answer using the information provided in this knowledge base.\n- Never invent university policies, names, dates, phone numbers or email addresses.\n- If information is unavailable, say: \"I'm sorry, I don't have confirmed information about this. Please contact the Computer Science Department office.\"\n- Keep answers simple and student-friendly.\n- Do not answer unrelated questions as if they are department policies.\n- Never pretend that unverified information is official."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -208,
+        -96
+      ],
+      "id": "241aee0d-74ff-4655-926e-bd57477f0788",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        96
+      ],
+      "id": "bcc65f66-568e-40ea-8d84-2f79691e7f07",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6q7Va3xRmyZrwqja",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14aeEeE0d-PI4-uffbHSkNhkXG-piDXv5pF-guELiGUQ",
+          "mode": "list",
+          "cachedResultName": "CS Department FAQ Knowledge Base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14aeEeE0d-PI4-uffbHSkNhkXG-piDXv5pF-guELiGUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14aeEeE0d-PI4-uffbHSkNhkXG-piDXv5pF-guELiGUQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -64,
+        128
+      ],
+      "id": "f3700eff-5963-4ca5-9809-c9a778ef22f0",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sfhzZDBS9jfmayu2",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "287d7c79-6a9e-4d64-b702-9540e7d4f965",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2999c52c70147fa5db554765a8ae0132c9799f0f47942c20e870afe8c7b37e16"
+  },
+  "nodeGroups": [],
+  "id": "3x3hkkXvpYZDJVBq",
+  "tags": []
+}
