@@ -2,26 +2,27 @@
 
 ## Description
 
-Answers common Computer Science department questions using a configured AI model. Import the n8n workflow, configure credentials and trigger, then test with a question. Verify actual department office hours before deployment.
+An n8n assistant designed to answer common Computer Science department questions using a configured AI model. The exported workflow and project screenshots are included in this folder. Verify actual department information before deployment.
 
 ## Workflow
 
-`Question/Webhook → n8n → Gemini → Answer (optional unanswered-query log)`
+`Question / Chat Trigger → n8n → AI model → Answer`
+
+An unanswered-query log can be added to help maintain the FAQ knowledge base.
 
 ## How to run
 
-1. Open the original project and make a safe copy for testing.
-2. Configure the required credentials and permissions. Store secrets in environment variables, Apps Script properties, or GitHub Actions secrets—not in this repository.
-3. Import or copy the original workflow/source files into this folder.
-4. Follow the setup notes in the project and run a test with sample data.
-5. Confirm the output and review logs for errors.
+1. Open n8n and import `CS Department FAQ AI Agent.json`.
+2. Configure the required AI model credentials and any trigger settings.
+3. Test the workflow with sample questions.
+4. Confirm answers against the department's official information before real use.
+5. Keep credentials outside the exported workflow and repository.
 
-## Files to add
+## Repository contents
 
-- [ ] **Original export:** n8n workflow JSON export. Save it here using the appropriate filename. It has not been attached yet.
-- [ ] **Screenshots:** Add genuine screenshots to the `screenshots/` folder (workflow overview, successful test, and output).
-- [ ] **Sensitive-data check:** Remove API keys, passwords, tokens, personal email content, and identifiable student data before committing.
+- `CS Department FAQ AI Agent.json` — exported n8n workflow.
+- `screenshots/` — project and workflow screenshots.
 
-## Evidence status
+## Security
 
-Documentation is prepared. Original exports and screenshots are pending upload from the working project.
+Do not commit API keys, passwords, tokens, private email content, or identifiable student data.
