@@ -1,0 +1,43 @@
+
+name: PPSC Monitor
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Run monitor
+        run: python monitor.py
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          PPSC_URL: ${{ secrets.PPSC_URL }}
+          KEYWORDS: ${{ secrets.KEYWORDS }}
+
+      - name: Save state
+        run: |
+          git config user.name 'ppsc-bot'
+          git config user.email 'bot@users.noreply.github.com'
+
+          git add seen.json
+
+          git diff --cached --quiet || (git commit -m 'update seen list' && git push)
