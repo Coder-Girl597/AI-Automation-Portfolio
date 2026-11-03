@@ -1,0 +1,483 @@
+function generateClassFeedbackAIReport() {
+  const CONFIG = {
+    RESPONSE_SHEET: "Response",
+    REPORT_SHEET: "AI Report",
+    MODEL: "gemini-3.5-flash",
+    API_KEY_PROPERTY: "GEMINI_API_KEY",
+    MAX_ATTEMPTS: 5
+  };
+
+  // 1. Read API key
+  const apiKey = PropertiesService.getScriptProperties()
+    .getProperty(CONFIG.API_KEY_PROPERTY);
+
+  if (!apiKey) {
+    throw new Error(
+      "Gemini API key not found. Add GEMINI_API_KEY in Script Properties."
+    );
+  }
+
+  // 2. Find response sheet
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const responseSheet = ss.getSheetByName(CONFIG.RESPONSE_SHEET);
+
+  if (!responseSheet) {
+    throw new Error(
+      'Cannot find the "' + CONFIG.RESPONSE_SHEET +
+      '" sheet. Check the tab name.'
+    );
+  }
+
+  const values = responseSheet.getDataRange().getValues();
+
+  if (values.length < 2) {
+    throw new Error("No student responses found yet.");
+  }
+
+  const headers = values[0].map(function (h) {
+    return String(h).trim().toLowerCase();
+  });
+
+  // 3. Find the required question columns
+  function findColumn(pattern, description) {
+    const regex = new RegExp(pattern, "i");
+
+    const index = headers.findIndex(function (header) {
+      return regex.test(header);
+    });
+
+    if (index === -1) {
+      throw new Error(
+        'Could not find the column for "' + description +
+        '". Check the question heading in row 1.'
+      );
+    }
+
+    return index;
+  }
+
+  const overallCol = findColumn(
+    "rate.*class.*overall|overall.*class.*rate",
+    "overall class rating"
+  );
+
+  const clarityCol = findColumn(
+    "explanation|clear.*instructor",
+    "explanation clarity"
+  );
+
+  const expectationsCol = findColumn(
+    "expectation",
+    "learning expectations"
+  );
+
+  const communicationCol = findColumn(
+    "communication",
+    "instructor communication"
+  );
+
+  const confidenceCol = findColumn(
+    "confident|confidence",
+    "student confidence"
+  );
+
+  // 4. Keep only non-empty response rows
+  const rows = values.slice(1).filter(function (row) {
+    return row.some(function (cell) {
+      return cell !== "" && cell !== null;
+    });
+  });
+
+  if (rows.length === 0) {
+    throw new Error("No non-empty response rows found.");
+  }
+
+  // 5. Count overall ratings and expectations
+  const overallCounts = {
+    Excellent: 0,
+    Good: 0,
+    Average: 0
+  };
+
+  const expectationCounts = {};
+
+  function addRating(row, column, counts) {
+    const answer = String(row[column] || "").trim();
+
+    if (!answer) return;
+
+    const matched = Object.keys(counts).find(function (key) {
+      return key.toLowerCase() === answer.toLowerCase();
+    });
+
+    if (matched) {
+      counts[matched]++;
+    }
+  }
+
+  // 6. Calculate numeric averages
+  function numericValues(column) {
+    return rows.map(function (row) {
+      const value = row[column];
+
+      if (value === "" || value === null) return null;
+
+      const number = Number(value);
+
+      return Number.isFinite(number) ? number : null;
+    }).filter(function (value) {
+      return value !== null && value >= 1 && value <= 5;
+    });
+  }
+
+  function average(numbers) {
+    if (!numbers.length) return null;
+
+    const total = numbers.reduce(function (sum, number) {
+      return sum + number;
+    }, 0);
+
+    return Math.round((total / numbers.length) * 100) / 100;
+  }
+
+  rows.forEach(function (row) {
+    addRating(row, overallCol, overallCounts);
+
+    const expectation = String(
+      row[expectationsCol] || ""
+    ).trim();
+
+    if (expectation) {
+      expectationCounts[expectation] =
+        (expectationCounts[expectation] || 0) + 1;
+    }
+  });
+
+  const clarityValues = numericValues(clarityCol);
+  const communicationValues = numericValues(communicationCol);
+  const confidenceValues = numericValues(confidenceCol);
+
+  const totalRatings = Object.keys(overallCounts).reduce(
+    function (sum, key) {
+      return sum + overallCounts[key];
+    },
+    0
+  );
+
+  const statistics = {
+    totalResponseRows: rows.length,
+
+    overallRatings: overallCounts,
+
+    percentages: {
+      Excellent: totalRatings
+        ? Math.round(
+            overallCounts.Excellent / totalRatings * 1000
+          ) / 10
+        : 0,
+
+      Good: totalRatings
+        ? Math.round(
+            overallCounts.Good / totalRatings * 1000
+          ) / 10
+        : 0,
+
+      Average: totalRatings
+        ? Math.round(
+            overallCounts.Average / totalRatings * 1000
+          ) / 10
+        : 0
+    },
+
+    learningExpectations: expectationCounts,
+
+    explanationClarityAverage: average(clarityValues),
+    explanationClarityResponses: clarityValues.length,
+
+    communicationAverage: average(communicationValues),
+    communicationResponses: communicationValues.length,
+
+    confidenceAverage: average(confidenceValues),
+    confidenceResponses: confidenceValues.length
+  };
+
+  // 7. Prepare the AI prompt
+  const prompt =
+    "You are an educational feedback analyst. Analyze these " +
+    "aggregated statistics from a class feedback form.\n\n" +
+    "STATISTICS:\n" +
+    JSON.stringify(statistics, null, 2) + "\n\n" +
+
+    "Write a concise professional report with these headings:\n" +
+    "1. Overall Summary\n" +
+    "2. What Went Well\n" +
+    "3. Areas for Improvement\n" +
+    "4. Recommendations for the Instructor\n" +
+    "5. Conclusion\n\n" +
+
+    "Rules:\n" +
+    "- Use only the supplied statistics.\n" +
+    "- Do not invent student comments or reasons.\n" +
+    "- State that findings are based on ratings and multiple-choice " +
+    "answers, not written comments.\n" +
+    "- Mention missing data where relevant.\n" +
+    "- Keep the report clear, balanced, and suitable for a class project.";
+
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/" +
+    CONFIG.MODEL + ":generateContent";
+
+  const payload = {
+    contents: [{
+      parts: [{
+        text: prompt
+      }]
+    }],
+
+    generationConfig: {
+      temperature: 0.2,
+      maxOutputTokens: 1200
+    }
+  };
+
+  const requestOptions = {
+    method: "post",
+    contentType: "application/json",
+
+    headers: {
+      "x-goog-api-key": apiKey
+    },
+
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  // 8. Call Gemini with automatic retries
+  let response = null;
+  let statusCode = 0;
+  let responseText = "";
+
+  const retryableCodes = [408, 429, 500, 502, 503, 504];
+
+  for (
+    let attempt = 1;
+    attempt <= CONFIG.MAX_ATTEMPTS;
+    attempt++
+  ) {
+    try {
+      response = UrlFetchApp.fetch(url, requestOptions);
+      statusCode = response.getResponseCode();
+      responseText = response.getContentText();
+
+      // Success: stop retrying
+      if (statusCode >= 200 && statusCode < 300) {
+        break;
+      }
+
+      // Do not retry permanent errors
+      if (retryableCodes.indexOf(statusCode) === -1) {
+        throw new Error(
+          "Gemini API error (" + statusCode + "): " +
+          responseText.substring(0, 1000)
+        );
+      }
+
+    } catch (error) {
+      // Re-throw permanent API errors immediately
+      if (
+        error.message &&
+        error.message.indexOf("Gemini API error (") === 0
+      ) {
+        throw error;
+      }
+
+      // Network or temporary request error
+      if (attempt === CONFIG.MAX_ATTEMPTS) {
+        throw new Error(
+          "Gemini request failed after " + attempt +
+          " attempts. Last error: " + error.message
+        );
+      }
+
+      statusCode = 503;
+      responseText = error.message;
+    }
+
+    // Stop if the final attempt has already been used
+    if (attempt === CONFIG.MAX_ATTEMPTS) {
+      throw new Error(
+        "Gemini API error (" + statusCode + ") after " +
+        CONFIG.MAX_ATTEMPTS + " attempts: " +
+        String(responseText).substring(0, 1000)
+      );
+    }
+
+    // Wait 2, 4, 8, then 16 seconds
+    const waitMilliseconds = Math.pow(2, attempt) * 1000;
+
+    console.log(
+      "Gemini returned error " + statusCode +
+      ". Retry " + (attempt + 1) + " of " +
+      CONFIG.MAX_ATTEMPTS + " in " +
+      waitMilliseconds / 1000 + " seconds."
+    );
+
+    Utilities.sleep(waitMilliseconds);
+  }
+
+  if (!response || statusCode < 200 || statusCode >= 300) {
+    throw new Error(
+      "Gemini failed to return a successful response."
+    );
+  }
+
+  // 9. Extract AI report text
+  let result;
+
+  try {
+    result = JSON.parse(responseText);
+  } catch (error) {
+    throw new Error(
+      "Gemini returned an unreadable response: " +
+      responseText.substring(0, 1000)
+    );
+  }
+
+  const report =
+    result.candidates &&
+    result.candidates[0] &&
+    result.candidates[0].content &&
+    result.candidates[0].content.parts
+      ? result.candidates[0].content.parts
+          .map(function (part) {
+            return part.text || "";
+          })
+          .join("\n")
+          .trim()
+      : "";
+
+  if (!report) {
+    throw new Error(
+      "Gemini returned no report text. Check the API response " +
+      "and try running the function again."
+    );
+  }
+
+  // 10. Find or create the separate AI Report sheet
+  let reportSheet = ss.getSheetByName(CONFIG.REPORT_SHEET);
+
+  if (!reportSheet) {
+    reportSheet = ss.insertSheet(CONFIG.REPORT_SHEET);
+  }
+
+  // Build report in memory before changing the report sheet
+  const output = [
+    ["CLASS FEEDBACK COLLECTOR — AI REPORT"],
+    ["Generated on", new Date()],
+    ["Responses analyzed", rows.length],
+    [""],
+
+    ["SUMMARY STATISTICS"],
+    ["Overall rating", "Count", "Percentage"],
+
+    ["Excellent", overallCounts.Excellent,
+      statistics.percentages.Excellent / 100],
+
+    ["Good", overallCounts.Good,
+      statistics.percentages.Good / 100],
+
+    ["Average", overallCounts.Average,
+      statistics.percentages.Average / 100],
+
+    [""],
+
+    ["Explanation clarity average (out of 5)",
+      statistics.explanationClarityAverage === null
+        ? "No numeric ratings"
+        : statistics.explanationClarityAverage],
+
+    ["Instructor communication average (out of 5)",
+      statistics.communicationAverage === null
+        ? "No numeric ratings"
+        : statistics.communicationAverage],
+
+    ["Student confidence average (out of 5)",
+      statistics.confidenceAverage === null
+        ? "No numeric ratings"
+        : statistics.confidenceAverage],
+
+    [""],
+    ["LEARNING EXPECTATIONS"],
+    ["Answer", "Count"]
+  ];
+
+  Object.keys(expectationCounts).forEach(function (answer) {
+    output.push([answer, expectationCounts[answer]]);
+  });
+
+  output.push([""]);
+  output.push(["GEMINI AI ANALYSIS"]);
+
+  report.split("\n").forEach(function (line) {
+    output.push([line]);
+  });
+
+  // Make every output row the same width
+  const width = Math.max.apply(
+    null,
+    output.map(function (row) {
+      return row.length;
+    })
+  );
+
+  const normalizedOutput = output.map(function (row) {
+    const copy = row.slice();
+
+    while (copy.length < width) {
+      copy.push("");
+    }
+
+    return copy;
+  });
+
+  // 11. Write the completed report
+  reportSheet.clearContents();
+
+  reportSheet.getRange(
+    1, 1, normalizedOutput.length, width
+  ).setValues(normalizedOutput);
+
+  // 12. Format the report
+  reportSheet.getRange("A1")
+    .setFontWeight("bold")
+    .setFontSize(15);
+
+  reportSheet.getRange("A5").setFontWeight("bold");
+  reportSheet.getRange("A6:C6").setFontWeight("bold");
+  reportSheet.getRange("A15").setFontWeight("bold");
+
+  const analysisIndex = output.findIndex(function (row) {
+    return row[0] === "GEMINI AI ANALYSIS";
+  });
+
+  if (analysisIndex !== -1) {
+    reportSheet.getRange("A" + (analysisIndex + 1))
+      .setFontWeight("bold");
+  }
+
+  reportSheet.getRange("C7:C9").setNumberFormat("0.0%");
+  reportSheet.getDataRange().setWrap(true);
+
+  reportSheet.setColumnWidth(1, 340);
+  reportSheet.setColumnWidth(2, 160);
+  reportSheet.setColumnWidth(3, 120);
+  reportSheet.setFrozenRows(1);
+
+  SpreadsheetApp.flush();
+
+  ss.toast(
+    'Gemini report created in "' + CONFIG.REPORT_SHEET + '".',
+    "Class Feedback Collector",
+    5
+  );
+}
