@@ -2,7 +2,7 @@
 
 ## Description
 
-Creates a tailored resume using profile and job details. Copy the sheets and Docs template, configure document/template IDs, authorize Google services, and use the Resume Automation menu.
+Uses profile and job information from Google Sheets to prepare a tailored resume with a Google Docs template and save the result as a Google Doc/PDF.
 
 ## Workflow
 
@@ -10,18 +10,17 @@ Creates a tailored resume using profile and job details. Copy the sheets and Doc
 
 ## How to run
 
-1. Open the original project and make a safe copy for testing.
-2. Configure the required credentials and permissions. Store secrets in environment variables, Apps Script properties, or GitHub Actions secrets—not in this repository.
-3. Import or copy the original workflow/source files into this folder.
-4. Follow the setup notes in the project and run a test with sample data.
-5. Confirm the output and review logs for errors.
+1. Make safe copies of the Profile and Job sheets and the Google Docs template.
+2. Configure the required spreadsheet and template document IDs in the script.
+3. Authorize the required Google Sheets, Docs, and Drive permissions.
+4. Use the `Resume Automation` menu to generate the resume.
+5. Check the generated Google Doc/PDF for accuracy before sharing it.
 
-## Files to add
+## Repository contents
 
-- [ ] **Original export:** Apps Script source export. Save it here using the appropriate filename. It has not been attached yet.
-- [ ] **Screenshots:** Add genuine screenshots to the `screenshots/` folder (workflow overview, successful test, and output).
-- [ ] **Sensitive-data check:** Remove API keys, passwords, tokens, personal email content, and identifiable student data before committing.
+- `Script` — Apps Script source code.
+- `screenshots/` — two screenshots showing the project and generated output.
 
-## Evidence status
+## Security
 
-Documentation is prepared. Original exports and screenshots are pending upload from the working project.
+Keep personal contact details, private resume information, document IDs where sensitive, and API keys out of public repositories. Use sample profile data for demonstrations.
