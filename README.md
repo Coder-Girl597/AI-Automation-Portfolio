@@ -65,7 +65,9 @@ Checks a configured PPSC/job page for relevant links, filters them using keyword
 
 ## Two-minute demo video
 
-**Status:** Not uploaded yet. Add a publicly viewable video URL after recording a two-minute walkthrough of the projects.
+## 🎥 2-Minute Demo Video
+
+[Watch My Portfolio Demo]([PASTE_YOUR_YOUTUBE_LINK_HERE](https://youtu.be/c9i-JJNnvis))
 
 ## University project extension
 
